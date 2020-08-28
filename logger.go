@@ -53,15 +53,15 @@ func InitLogger(cfg *LogConfig) {
 		return level < zap.ErrorLevel && level >= zap.DebugLevel
 	})
 	if cfg.Simple {
-		//writeSyncer := getLogWriter() // 写日志
-		errCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(getLogWriter("err"), zapcore.AddSync(os.Stdout)), errPriority)
-		debugCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(getLogWriter("debug"), zapcore.AddSync(os.Stdout)), debugPriority)
-		Logger = zap.New(zapcore.NewTee(debugCore, errCore), zap.AddCaller())
+		writeSyncer := getLogWriterSimple()                                                                                        // 写日志
+		core := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(writeSyncer, zapcore.AddSync(os.Stdout)), zapcore.DebugLevel) // 如何写，写到哪, 什么级别写
+		Logger = zap.New(zapcore.NewTee(core), zap.AddCaller())
 		return
 	}
-	writeSyncer := getLogWriterSimple()                                                                                        // 写日志
-	core := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(writeSyncer, zapcore.AddSync(os.Stdout)), zapcore.DebugLevel) // 如何写，写到哪, 什么级别写
-	Logger = zap.New(zapcore.NewTee(core), zap.AddCaller())
+	//writeSyncer := getLogWriter() // 写日志
+	errCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(getLogWriter("err"), zapcore.AddSync(os.Stdout)), errPriority)
+	debugCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(getLogWriter("debug"), zapcore.AddSync(os.Stdout)), debugPriority)
+	Logger = zap.New(zapcore.NewTee(debugCore, errCore), zap.AddCaller())
 }
 
 func getEncoder() zapcore.Encoder {

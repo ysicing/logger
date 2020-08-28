@@ -6,7 +6,7 @@ package main
 import "github.com/ysicing/logger"
 
 func init() {
-	cfg := logger.LogConfig{Simple: true}
+	cfg := logger.LogConfig{Simple: false}
 	logger.InitLogger(&cfg)
 }
 
