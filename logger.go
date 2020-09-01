@@ -22,7 +22,7 @@ const (
 )
 
 var (
-	Logger *zap.Logger
+	Log *zap.Logger
 )
 
 //func NewLogger(cfg *LogConfig) *zap.Logger {
@@ -55,13 +55,13 @@ func InitLogger(cfg *LogConfig) {
 	if cfg.Simple {
 		writeSyncer := getLogWriterSimple()                                                                                        // 写日志
 		core := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(writeSyncer, zapcore.AddSync(os.Stdout)), zapcore.DebugLevel) // 如何写，写到哪, 什么级别写
-		Logger = zap.New(zapcore.NewTee(core), zap.AddCaller())
+		Log = zap.New(zapcore.NewTee(core), zap.AddCaller())
 		return
 	}
 	//writeSyncer := getLogWriter() // 写日志
 	errCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(getLogWriter("err"), zapcore.AddSync(os.Stdout)), errPriority)
 	debugCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(getLogWriter("debug"), zapcore.AddSync(os.Stdout)), debugPriority)
-	Logger = zap.New(zapcore.NewTee(debugCore, errCore), zap.AddCaller())
+	Log = zap.New(zapcore.NewTee(debugCore, errCore), zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
 }
 
 func getEncoder() zapcore.Encoder {
@@ -111,19 +111,54 @@ func getLogWriterSimple() zapcore.WriteSyncer {
 	return zapcore.AddSync(lumberJackLogger)
 }
 
+func tpl(template string, fmtArgs ...interface{}) string {
+	msg := template
+	if msg == "" && len(fmtArgs) > 0 {
+		msg = fmt.Sprint(fmtArgs...)
+	} else if msg != "" && len(fmtArgs) > 0 {
+		msg = fmt.Sprintf(template, fmtArgs...)
+	}
+	return msg
+}
+
 func Debug(msg interface{}) {
-	Logger.Sugar().Debug(msg)
+	Log.Sugar().Debug(msg)
+}
+
+func Debugf(template string, fmtArgs ...interface{}) {
+	Log.Sugar().Debug(tpl(template, fmtArgs))
 }
 
 func Info(msg interface{}) {
-	Logger.Sugar().Info(msg)
+	Log.Sugar().Info(msg)
+}
+
+func Infof(template string, fmtArgs ...interface{}) {
+	Log.Sugar().Info(tpl(template, fmtArgs))
+}
+
+func Warn(msg interface{}) {
+	Log.Sugar().Warn(msg)
+}
+
+func Warnf(template string, fmtArgs ...interface{}) {
+	Log.Sugar().Warn(tpl(template, fmtArgs))
 }
 
 func Error(msg interface{}) {
-	Logger.Sugar().Error(msg)
+	Log.Sugar().Error(msg)
+}
+
+func Errorf(template string, fmtArgs ...interface{}) {
+	Log.Sugar().Error(tpl(template, fmtArgs))
 }
 
 func Exit(msg interface{}) {
-	Logger.Sugar().Error(msg, "\t === err exit === \n")
+	Log.Sugar().Error(msg, "\t === err exit === \n")
+	os.Exit(-1)
+}
+
+func Exitf(template string, fmtArgs ...interface{}) {
+	Log.Sugar().Error(tpl(template, fmtArgs), "\t === err exit === \n")
 	os.Exit(-1)
 }
