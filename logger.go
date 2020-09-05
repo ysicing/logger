@@ -22,7 +22,8 @@ const (
 )
 
 var (
-	Log *zap.Logger
+	Log  *zap.Logger
+	Slog *zap.SugaredLogger
 )
 
 //func NewLogger(cfg *LogConfig) *zap.Logger {
@@ -55,13 +56,15 @@ func InitLogger(cfg *LogConfig) {
 	if cfg.Simple {
 		writeSyncer := getLogWriterSimple()                                                                                        // 写日志
 		core := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(writeSyncer, zapcore.AddSync(os.Stdout)), zapcore.DebugLevel) // 如何写，写到哪, 什么级别写
-		Log = zap.New(zapcore.NewTee(core), zap.AddCaller())
+		Log = zap.New(zapcore.NewTee(core), zap.AddCaller(), zap.AddStacktrace(zapcore.WarnLevel))
+		Slog = Log.Sugar()
 		return
 	}
 	//writeSyncer := getLogWriter() // 写日志
 	errCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(getLogWriter("err"), zapcore.AddSync(os.Stdout)), errPriority)
 	debugCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(getLogWriter("debug"), zapcore.AddSync(os.Stdout)), debugPriority)
 	Log = zap.New(zapcore.NewTee(debugCore, errCore), zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+	Slog = Log.Sugar()
 }
 
 func getEncoder() zapcore.Encoder {
@@ -119,38 +122,6 @@ func tpl(template string, fmtArgs ...interface{}) string {
 		msg = fmt.Sprintf(template, fmtArgs...)
 	}
 	return msg
-}
-
-func Debug(msg interface{}) {
-	Log.Sugar().Debug(msg)
-}
-
-func Debugf(template string, fmtArgs ...interface{}) {
-	Log.Sugar().Debug(tpl(template, fmtArgs))
-}
-
-func Info(msg interface{}) {
-	Log.Sugar().Info(msg)
-}
-
-func Infof(template string, fmtArgs ...interface{}) {
-	Log.Sugar().Info(tpl(template, fmtArgs))
-}
-
-func Warn(msg interface{}) {
-	Log.Sugar().Warn(msg)
-}
-
-func Warnf(template string, fmtArgs ...interface{}) {
-	Log.Sugar().Warn(tpl(template, fmtArgs))
-}
-
-func Error(msg interface{}) {
-	Log.Sugar().Error(msg)
-}
-
-func Errorf(template string, fmtArgs ...interface{}) {
-	Log.Sugar().Error(tpl(template, fmtArgs))
 }
 
 func Exit(msg interface{}) {

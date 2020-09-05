@@ -14,10 +14,10 @@ func init() {
 }
 
 func main() {
-	logger.Debug("debug")
-	logger.Debugf("", "1", 2, 3, extime.GetToday())
+	logger.Slog.Debug("debug")
+	logger.Slog.Debugf("", "1", 2, 3, extime.GetToday())
 	logger.Log.Sugar().Debug("1", 2, 3, extime.GetToday())
-	logger.Info("info")
-	logger.Error("error")
+	logger.Slog.Info("info")
+	logger.Slog.Error("error")
 	logger.Exit("error exit")
 }
