@@ -56,14 +56,14 @@ func InitLogger(cfg *LogConfig) {
 	if cfg.Simple {
 		writeSyncer := getLogWriterSimple()                                                                                        // 写日志
 		core := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(writeSyncer, zapcore.AddSync(os.Stdout)), zapcore.DebugLevel) // 如何写，写到哪, 什么级别写
-		Log = zap.New(zapcore.NewTee(core), zap.AddCaller(), zap.AddStacktrace(zapcore.WarnLevel))
+		Log = zap.New(zapcore.NewTee(core)).WithOptions(cfg.debugMode()...)
 		Slog = Log.Sugar()
 		return
 	}
 	//writeSyncer := getLogWriter() // 写日志
 	errCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(getLogWriter("err"), zapcore.AddSync(os.Stdout)), errPriority)
 	debugCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(getLogWriter("debug"), zapcore.AddSync(os.Stdout)), debugPriority)
-	Log = zap.New(zapcore.NewTee(debugCore, errCore), zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+	Log = zap.New(zapcore.NewTee(debugCore, errCore)).WithOptions(cfg.debugMode()...)
 	Slog = Log.Sugar()
 }
 
@@ -71,6 +71,8 @@ func getEncoder() zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = timeEncoder //zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	//encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+	//encoderConfig.LineEnding = zapcore.DefaultLineEnding
 	return zapcore.NewConsoleEncoder(encoderConfig)
 }
 
@@ -126,10 +128,10 @@ func tpl(template string, fmtArgs ...interface{}) string {
 
 func Exit(msg interface{}) {
 	Log.Sugar().Error(msg, "\t === err exit === \n")
-	os.Exit(-1)
+	os.Exit(0)
 }
 
 func Exitf(template string, fmtArgs ...interface{}) {
 	Log.Sugar().Error(tpl(template, fmtArgs), "\t === err exit === \n")
-	os.Exit(-1)
+	os.Exit(0)
 }

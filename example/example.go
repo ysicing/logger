@@ -6,10 +6,23 @@ package main
 import (
 	"github.com/ysicing/go-utils/extime"
 	"github.com/ysicing/logger"
+	"go.uber.org/zap/zapcore"
+	"log"
+	"runtime"
 )
 
+func demohook() func(entry zapcore.Entry) error {
+	return func(entry zapcore.Entry) error {
+		if entry.Level < zapcore.ErrorLevel {
+			return nil
+		}
+		log.Println(runtime.GOOS)
+		return nil
+	}
+}
+
 func init() {
-	cfg := logger.LogConfig{Simple: false}
+	cfg := logger.LogConfig{Simple: false, HookFunc: demohook()}
 	logger.InitLogger(&cfg)
 }
 
