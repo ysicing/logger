@@ -22,7 +22,7 @@ func demohook() func(entry zapcore.Entry) error {
 }
 
 func init() {
-	cfg := logger.LogConfig{Simple: false, HookFunc: demohook()}
+	cfg := logger.LogConfig{Simple: false, HookFunc: demohook(), JsonFormat: true}
 	logger.InitLogger(&cfg)
 }
 

@@ -46,7 +46,7 @@ var (
 //}
 
 func InitLogger(cfg *LogConfig) {
-	encoder := getEncoder() // 编码器
+	encoder := getEncoder(cfg) // 编码器
 	errPriority := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
 		return level >= zap.ErrorLevel
 	})
@@ -67,12 +67,15 @@ func InitLogger(cfg *LogConfig) {
 	Slog = Log.Sugar()
 }
 
-func getEncoder() zapcore.Encoder {
+func getEncoder(cfg *LogConfig) zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = timeEncoder //zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 	//encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
 	//encoderConfig.LineEnding = zapcore.DefaultLineEnding
+	if cfg.JsonFormat {
+		return zapcore.NewJSONEncoder(encoderConfig)
+	}
 	return zapcore.NewConsoleEncoder(encoderConfig)
 }
 

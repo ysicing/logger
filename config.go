@@ -11,6 +11,7 @@ import (
 type LogConfig struct {
 	Simple   bool
 	HookFunc func(zapcore.Entry) error
+	JsonFormat bool
 }
 
 func (cfg *LogConfig) debugMode() []zap.Option {
